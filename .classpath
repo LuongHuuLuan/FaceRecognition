@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-15">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="libs/ffmpeg.jar"/>
+	<classpathentry kind="lib" path="libs/ffmpeg-windows-x86_64.jar"/>
+	<classpathentry kind="lib" path="libs/ffmpeg-windows-x86.jar"/>
+	<classpathentry kind="lib" path="libs/javacpp.jar"/>
+	<classpathentry kind="lib" path="libs/javacpp-windows-x86_64.jar"/>
+	<classpathentry kind="lib" path="libs/javacpp-windows-x86.jar"/>
+	<classpathentry kind="lib" path="libs/javacv.jar"/>
+	<classpathentry kind="lib" path="libs/openblas.jar"/>
+	<classpathentry kind="lib" path="libs/openblas-windows-x86_64.jar"/>
+	<classpathentry kind="lib" path="libs/openblas-windows-x86.jar"/>
+	<classpathentry kind="lib" path="libs/opencv.jar"/>
+	<classpathentry kind="lib" path="libs/opencv-454.jar"/>
+	<classpathentry kind="lib" path="libs/opencv-windows-x86_64.jar"/>
+	<classpathentry kind="lib" path="libs/opencv-windows-x86.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
