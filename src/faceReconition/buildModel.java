@@ -20,6 +20,7 @@ public class buildModel {
 	private FaceRecognizer recognizer = LBPHFaceRecognizer.create();
 
 	public boolean build(String path, String modelName) {
+		FaceManager.deleteAll();
 		File pathRoot = new File(path);
 		int size = countImgs(path);
 		MatVector images = new MatVector(size);
@@ -29,6 +30,8 @@ public class buildModel {
 		for (File people : pathRoot.listFiles()) {
 			String id = people.getName().split("_")[0];
 			int label = Integer.parseInt(id);
+			String name = people.getName().split("_")[1];
+			FaceManager.insertFace(label, name);
 			for (File img : people.listFiles()) {
 				Mat mat = opencv_imgcodecs.imread(img.getAbsolutePath(), opencv_imgcodecs.IMREAD_GRAYSCALE);
 				opencv_imgproc.resize(mat, mat, new Size(128, 128));
@@ -41,7 +44,6 @@ public class buildModel {
 		}
 		recognizer.train(images, labels);
 		recognizer.save("model//" + modelName + ".yml");
-//		System.out.println("xong");
 		return true;
 	}
 
@@ -56,6 +58,6 @@ public class buildModel {
 	}
 
 	public static void main(String[] args) {
-		new buildModel().build("dataset//myDataset", "model1");
+		new buildModel().build("dataset//", "model");
 	}
 }

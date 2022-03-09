@@ -11,7 +11,6 @@ import org.bytedeco.opencv.opencv_core.Scalar;
 import org.bytedeco.opencv.opencv_core.Size;
 import org.bytedeco.opencv.opencv_face.LBPHFaceRecognizer;
 import org.bytedeco.opencv.opencv_objdetect.CascadeClassifier;
-import org.bytedeco.opencv.opencv_videoio.VideoCapture;
 
 public class FaceRecognizer {
 	private LBPHFaceRecognizer recognizer;
@@ -39,9 +38,10 @@ public class FaceRecognizer {
 			DoublePointer confidence = new DoublePointer(1);
 			recognizer.predict(face, label, confidence);
 			int prediction = label.get(0);
+			String name = predictName(prediction, confidence.get(0));
 			opencv_imgproc.rectangle(img, roi, new Scalar(0, 255, 0, 1));
-			opencv_imgproc.putText(img, prediction + "," + confidence.get(0), roi.tl(),
-					opencv_imgproc.CV_FONT_HERSHEY_PLAIN, 2, new Scalar(0, 255, 0, 1));
+			opencv_imgproc.putText(img, name, roi.tl(), opencv_imgproc.CV_FONT_HERSHEY_PLAIN, 2,
+					new Scalar(0, 255, 0, 1));
 		}
 		return img;
 	}
@@ -59,10 +59,23 @@ public class FaceRecognizer {
 			DoublePointer confidence = new DoublePointer(1);
 			recognizer.predict(face, label, confidence);
 			int prediction = label.get(0);
+			String name = predictName(prediction, confidence.get(0));
 			opencv_imgproc.rectangle(img, roi, new Scalar(0, 255, 0, 1));
-			opencv_imgproc.putText(img, prediction + "," + confidence.get(0), roi.tl(),
-					opencv_imgproc.CV_FONT_HERSHEY_SIMPLEX, 2, new Scalar(0, 255, 0, 1));
+			opencv_imgproc.putText(img, name, roi.tl(), opencv_imgproc.CV_FONT_HERSHEY_SIMPLEX, 2,
+					new Scalar(0, 255, 0, 1));
 		}
 		return img;
+	}
+
+	public String predictName(int id, double confidence) {
+		if (confidence < 100) {
+			return FaceManager.getFaceName(id);
+		} else {
+			return "Unknown";
+		}
+	}
+
+	public void reloadModel() {
+		recognizer.read("model//model.yml");
 	}
 }

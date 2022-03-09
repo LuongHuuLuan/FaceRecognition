@@ -56,7 +56,7 @@ public class FaceDetection {
 	}
 
 	public void saveImg(Mat image, String location, String name) {
-		String path = location + "//" + name + ".jpg";
+		String path = location + "//" + name + ".png";
 		opencv_imgcodecs.imwrite(path, image);
 	}
 

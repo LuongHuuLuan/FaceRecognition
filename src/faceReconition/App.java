@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -34,16 +35,17 @@ public class App extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 	private JLabel labelCamera, labelImg;
-	private GridBagConstraints gbc;
-	private JButton btnStartCamera, btnCloseCamera, btnTrain, btnTakePhoto, btnRecognizerVideo, btnRecognizerImg,
-			btnRecoginerCamera, btnClose;
+	private JButton btnStartCamera, btnCloseCamera, btnTrain, btnTakePhoto, btnRecognizerImg, btnRecoginerCamera,
+			btnClose;
 	private Dimension dimForBtn = new Dimension(80, 80);
 	private Dimension dimForLabel = new Dimension(400, 400);
+	private GridBagConstraints gbc;
+//	 btnRecognizerVideo
 	private FaceDetection faceDetection = new FaceDetection();
-	private boolean enableCamera = false, takePhoto = false, recognizerCamera = false;
+	private FaceRecognizer faceRecognizer = new FaceRecognizer();
+	private boolean enableCamera = false, takePhoto = false;
 	private VideoCapture videoCap = new VideoCapture(0);
 	private static Mat image = new Mat();
-	private FaceRecognizer faceRecognizer = new FaceRecognizer();
 
 	public App() {
 		initComponets();
@@ -87,7 +89,9 @@ public class App extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				enableCamera = true;
 				btnStartCamera.setEnabled(false);
+				btnRecoginerCamera.setEnabled(false);
 				btnCloseCamera.setEnabled(true);
+				btnTrain.setEnabled(false);
 				startCamera();
 			}
 		});
@@ -104,6 +108,8 @@ public class App extends JFrame {
 				btnStartCamera.setEnabled(true);
 				btnRecoginerCamera.setEnabled(true);
 				btnCloseCamera.setEnabled(false);
+				btnTakePhoto.setEnabled(true);
+				btnTrain.setEnabled(true);
 			}
 		});
 		btns.add(btnCloseCamera);
@@ -141,9 +147,9 @@ public class App extends JFrame {
 		});
 		btns.add(btnRecognizerImg);
 
-		btnRecognizerVideo = new JButton(loadIcon("iconApp//recognizerVideo.png", 80, 80));
-		btnRecognizerVideo.setPreferredSize(dimForBtn);
-		btns.add(btnRecognizerVideo);
+//		btnRecognizerVideo = new JButton(loadIcon("iconApp//recognizerVideo.png", 80, 80));
+//		btnRecognizerVideo.setPreferredSize(dimForBtn);
+//		btns.add(btnRecognizerVideo);
 
 		btnRecoginerCamera = new JButton(loadIcon("iconApp//recognizerCamera.png", 80, 80));
 		btnRecoginerCamera.setPreferredSize(dimForBtn);
@@ -152,7 +158,10 @@ public class App extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				enableCamera = true;
 				btnRecoginerCamera.setEnabled(false);
+				btnStartCamera.setEnabled(false);
+				btnTakePhoto.setEnabled(false);
 				btnCloseCamera.setEnabled(true);
+				btnTrain.setEnabled(false);
 				recognizerCamera();
 			}
 		});
@@ -203,9 +212,39 @@ public class App extends JFrame {
 					JOptionPane.showMessageDialog(getContentPane(), "Vui long mo camera");
 				} else {
 					id_ten = JOptionPane.showInputDialog("Nhap id_HoTen");
-					folderRoot = new File("dataset//myDataset//" + id_ten);
+					try {
+						StringTokenizer token = new StringTokenizer(id_ten, "_");
+						int id = Integer.parseInt(token.nextToken());
+						String name = token.nextToken();
+						folderRoot = new File("dataset//" + id_ten);
+						if (FaceManager.getFaceName(id) == null) {
+							FaceManager.insertFace(id, name);
+						} else {
+							int chose = JOptionPane.showConfirmDialog(getContentPane(),
+									"ID da co ban co muon cap nhat du lieu");
+							if (chose == JOptionPane.YES_OPTION) {
+								File dataset = new File("dataset//");
+								for (File people : dataset.listFiles()) {
+									if (Integer.parseInt(people.getName().split("_")[0]) == id) {
+										for (File image : people.listFiles()) {
+											image.delete();
+										}
+										people.delete();
+										break;
+									}
+								}
+								FaceManager.updateName(id, name);
+							} else {
+								id_ten = null;
+							}
+						}
+					} catch (Exception e) {
+						id_ten = null;
+						JOptionPane.showMessageDialog(getContentPane(), "Sai cu phap vui long nhap lai");
+					}
 				}
 				if (id_ten != null && enableCamera) {
+					btnCloseCamera.setEnabled(false);
 					if (!folderRoot.exists())
 						folderRoot.mkdir();
 					try {
@@ -220,7 +259,9 @@ public class App extends JFrame {
 							takePhoto = false;
 						}
 						if (takePhoto == false) {
+							JOptionPane.showMessageDialog(getContentPane(), "Xong");
 							labelImg.setIcon(loadIcon("iconApp//labelImg.png", 400, 400));
+							btnCloseCamera.setEnabled(true);
 							labelImg.repaint();
 							break;
 						}
@@ -242,6 +283,7 @@ public class App extends JFrame {
 				} else {
 					takePhoto = false;
 					btnTakePhoto.setEnabled(true);
+					btnCloseCamera.setEnabled(true);
 				}
 			}
 		}).start();
@@ -253,10 +295,12 @@ public class App extends JFrame {
 			public void run() {
 				btnTrain.setEnabled(false);
 				buildModel train = new buildModel();
-				boolean finish = train.build("dataset//myDataset", "model");
+				boolean finish = train.build("dataset//", "model");
+//				faceRecognizer.reloadModel();
 				if (finish) {
-					JOptionPane.showMessageDialog(getContentPane(), "Train finish");
+					JOptionPane.showMessageDialog(getContentPane(), "Train xong vui long khoi dong lai ung dung");
 					btnTrain.setEnabled(true);
+					System.exit(0);
 				}
 			}
 
