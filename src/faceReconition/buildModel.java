@@ -22,7 +22,6 @@ public class buildModel {
 	public boolean build(String path, String modelName) {
 		File pathRoot = new File(path);
 		int size = countImgs(path);
-		System.out.println(size);
 		MatVector images = new MatVector(size);
 		Mat labels = new Mat(size, 1, CV_32SC1);
 		IntBuffer labelsBuf = labels.createBuffer();
@@ -31,7 +30,6 @@ public class buildModel {
 			String id = people.getName().split("_")[0];
 			int label = Integer.parseInt(id);
 			for (File img : people.listFiles()) {
-				System.out.println(counter);
 				Mat mat = opencv_imgcodecs.imread(img.getAbsolutePath(), opencv_imgcodecs.IMREAD_GRAYSCALE);
 				opencv_imgproc.resize(mat, mat, new Size(128, 128));
 				images.put(counter, mat);

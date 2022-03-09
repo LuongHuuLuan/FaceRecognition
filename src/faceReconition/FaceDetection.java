@@ -47,7 +47,6 @@ public class FaceDetection {
 
 	public Mat cutFace(Mat image) {
 		RectVector rois = getFaceLocation(image);
-		System.out.println(rois.size());
 		if (rois.size() != 1) {
 			return null;
 		}

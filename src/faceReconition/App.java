@@ -9,6 +9,7 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -16,10 +17,12 @@ import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.bytedeco.javacv.Java2DFrameUtils;
 import org.bytedeco.opencv.opencv_core.Mat;
@@ -37,9 +40,10 @@ public class App extends JFrame {
 	private Dimension dimForBtn = new Dimension(80, 80);
 	private Dimension dimForLabel = new Dimension(400, 400);
 	private FaceDetection faceDetection = new FaceDetection();
-	private boolean enableCamera = false, takePhoto = false;
+	private boolean enableCamera = false, takePhoto = false, recognizerCamera = false;
 	private VideoCapture videoCap = new VideoCapture(0);
 	private static Mat image = new Mat();
+	private FaceRecognizer faceRecognizer = new FaceRecognizer();
 
 	public App() {
 		initComponets();
@@ -98,6 +102,7 @@ public class App extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				enableCamera = false;
 				btnStartCamera.setEnabled(true);
+				btnRecoginerCamera.setEnabled(true);
 				btnCloseCamera.setEnabled(false);
 			}
 		});
@@ -128,6 +133,12 @@ public class App extends JFrame {
 
 		btnRecognizerImg = new JButton(loadIcon("iconApp//recognizerImg.png", 80, 80));
 		btnRecognizerImg.setPreferredSize(dimForBtn);
+		btnRecognizerImg.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				recognizerImage();
+			}
+		});
 		btns.add(btnRecognizerImg);
 
 		btnRecognizerVideo = new JButton(loadIcon("iconApp//recognizerVideo.png", 80, 80));
@@ -136,6 +147,15 @@ public class App extends JFrame {
 
 		btnRecoginerCamera = new JButton(loadIcon("iconApp//recognizerCamera.png", 80, 80));
 		btnRecoginerCamera.setPreferredSize(dimForBtn);
+		btnRecoginerCamera.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				enableCamera = true;
+				btnRecoginerCamera.setEnabled(false);
+				btnCloseCamera.setEnabled(true);
+				recognizerCamera();
+			}
+		});
 		btns.add(btnRecoginerCamera);
 
 		btnClose = new JButton(loadIcon("iconApp//close.jpg", 80, 80));
@@ -175,12 +195,15 @@ public class App extends JFrame {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				String id_ten = JOptionPane.showInputDialog("Nhap id_HoTen");
-				File folderRoot = new File("dataset//myDataset//" + id_ten);
+				String id_ten = "";
+				File folderRoot = null;
 				if (!enableCamera) {
 					takePhoto = false;
 					btnTakePhoto.setEnabled(true);
 					JOptionPane.showMessageDialog(getContentPane(), "Vui long mo camera");
+				} else {
+					id_ten = JOptionPane.showInputDialog("Nhap id_HoTen");
+					folderRoot = new File("dataset//myDataset//" + id_ten);
 				}
 				if (id_ten != null && enableCamera) {
 					if (!folderRoot.exists())
@@ -237,6 +260,58 @@ public class App extends JFrame {
 				}
 			}
 
+		}).start();
+	}
+
+	public void recognizerImage() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				JFileChooser fileChooser = new JFileChooser();
+				FileNameExtensionFilter imgExt = new FileNameExtensionFilter("hinh anh", "jpg", "png");
+				fileChooser.setFileFilter(imgExt);
+				fileChooser.setMultiSelectionEnabled(false);
+
+				int x = fileChooser.showDialog(getContentPane(), "chon");
+				if (x == JFileChooser.APPROVE_OPTION) {
+					File f = fileChooser.getSelectedFile();
+					BufferedImage image = null;
+					try {
+						image = ImageIO.read(f);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					Mat input = Java2DFrameUtils.toMat(image);
+					Mat output = faceRecognizer.recognizerImage(input);
+//					int h = 400;
+//					int w = (int) (400 * ((double) output.cols() / (double) output.rows()));
+					int w = 400;
+					int h = (int) (400 * ((double) output.rows() / (double) output.cols()));
+					ImageIcon icon = new ImageIcon(
+							Java2DFrameUtils.toBufferedImage(output).getScaledInstance(w, h, Image.SCALE_SMOOTH));
+					labelImg.setIcon(icon);
+					labelImg.repaint();
+				}
+			}
+		}).start();
+	}
+
+	public void recognizerCamera() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					if (enableCamera == false) {
+						labelCamera.setIcon(loadIcon("iconApp//labelCamera.png", 400, 400));
+						break;
+					}
+					videoCap.read(image);
+					ImageIcon icon = new ImageIcon(
+							Java2DFrameUtils.toBufferedImage(faceRecognizer.recognizerImage(image)));
+					labelCamera.setIcon(icon);
+					labelCamera.repaint();
+				}
+			}
 		}).start();
 	}
 
