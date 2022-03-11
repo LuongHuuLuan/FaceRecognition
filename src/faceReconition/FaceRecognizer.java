@@ -15,6 +15,7 @@ import org.bytedeco.opencv.opencv_objdetect.CascadeClassifier;
 public class FaceRecognizer {
 	private LBPHFaceRecognizer recognizer;
 	private CascadeClassifier classify;
+	private String name = "";
 
 	public FaceRecognizer() {
 		recognizer = LBPHFaceRecognizer.create();
@@ -31,6 +32,8 @@ public class FaceRecognizer {
 		}
 		RectVector faces = new RectVector();
 		classify.detectMultiScale(imgGray, faces);
+		if (faces.size() == 0)
+			name = "Unknown";
 		for (Rect roi : faces.get()) {
 			Mat face = new Mat(imgGray, roi);
 			opencv_imgproc.resize(face, face, new Size(128, 128));
@@ -52,6 +55,8 @@ public class FaceRecognizer {
 		opencv_imgproc.cvtColor(img, imgGray, opencv_imgproc.CV_BGRA2GRAY);
 		RectVector faces = new RectVector();
 		classify.detectMultiScale(imgGray, faces);
+		if (faces.size() == 0)
+			name = "Unknown";
 		for (Rect roi : faces.get()) {
 			Mat face = new Mat(imgGray, roi);
 			opencv_imgproc.resize(face, face, new Size(128, 128));
@@ -69,10 +74,16 @@ public class FaceRecognizer {
 
 	public String predictName(int id, double confidence) {
 		if (confidence < 100) {
-			return FaceManager.getFaceName(id);
+			name = FaceManager.getFaceName(id);
+			return name;
 		} else {
-			return "Unknown";
+			name = "Unknown";
+			return name;
 		}
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	public void reloadModel() {

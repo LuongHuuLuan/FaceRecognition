@@ -34,13 +34,12 @@ public class App extends JFrame {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private JLabel labelCamera, labelImg;
+	private JLabel labelCamera, labelImg, labelName;
 	private JButton btnStartCamera, btnCloseCamera, btnTrain, btnTakePhoto, btnRecognizerImg, btnRecoginerCamera,
 			btnClose;
 	private Dimension dimForBtn = new Dimension(80, 80);
-	private Dimension dimForLabel = new Dimension(400, 400);
+	private Dimension dimForLabel = new Dimension(450, 450);
 	private GridBagConstraints gbc;
-//	 btnRecognizerVideo
 	private FaceDetection faceDetection = new FaceDetection();
 	private FaceRecognizer faceRecognizer = new FaceRecognizer();
 	private boolean enableCamera = false, takePhoto = false;
@@ -51,7 +50,7 @@ public class App extends JFrame {
 		initComponets();
 
 		setVisible(true);
-		setSize(900, 600);
+		setSize(1000, 700);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 	}
@@ -68,16 +67,22 @@ public class App extends JFrame {
 		addGbcComponent(labelTile, 0, 0, 2, 1);
 
 		labelCamera = new JLabel();
-		labelCamera.setIcon(loadIcon("iconApp//labelCamera.png", 400, 400));
+		labelCamera.setIcon(loadIcon("iconApp//labelCamera.png", 450, 450));
 		labelCamera.setPreferredSize(dimForLabel);
 		labelCamera.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		addGbcComponent(labelCamera, 0, 1, 1, 1);
 
 		labelImg = new JLabel();
-		labelImg.setIcon(loadIcon("iconApp//labelImg.png", 400, 400));
+		labelImg.setIcon(loadIcon("iconApp//labelImg.png", 450, 450));
 		labelImg.setPreferredSize(dimForLabel);
 		labelImg.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		addGbcComponent(labelImg, 1, 1, 1, 1);
+
+		labelName = new JLabel();
+		labelName.setHorizontalAlignment(JLabel.CENTER);
+		labelName.setFont(new Font("Arial", Font.BOLD, 20));
+		labelName.setForeground(Color.RED);
+		addGbcComponent(labelName, 0, 2, 2, 1);
 
 		JPanel btns = new JPanel();
 
@@ -92,6 +97,7 @@ public class App extends JFrame {
 				btnRecoginerCamera.setEnabled(false);
 				btnCloseCamera.setEnabled(true);
 				btnTrain.setEnabled(false);
+				btnRecognizerImg.setEnabled(false);
 				startCamera();
 			}
 		});
@@ -107,6 +113,7 @@ public class App extends JFrame {
 				enableCamera = false;
 				btnStartCamera.setEnabled(true);
 				btnRecoginerCamera.setEnabled(true);
+				btnRecognizerImg.setEnabled(true);
 				btnCloseCamera.setEnabled(false);
 				btnTakePhoto.setEnabled(true);
 				btnTrain.setEnabled(true);
@@ -147,10 +154,6 @@ public class App extends JFrame {
 		});
 		btns.add(btnRecognizerImg);
 
-//		btnRecognizerVideo = new JButton(loadIcon("iconApp//recognizerVideo.png", 80, 80));
-//		btnRecognizerVideo.setPreferredSize(dimForBtn);
-//		btns.add(btnRecognizerVideo);
-
 		btnRecoginerCamera = new JButton(loadIcon("iconApp//recognizerCamera.png", 80, 80));
 		btnRecoginerCamera.setPreferredSize(dimForBtn);
 		btnRecoginerCamera.addActionListener(new ActionListener() {
@@ -158,6 +161,7 @@ public class App extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				enableCamera = true;
 				btnRecoginerCamera.setEnabled(false);
+				btnRecognizerImg.setEnabled(false);
 				btnStartCamera.setEnabled(false);
 				btnTakePhoto.setEnabled(false);
 				btnCloseCamera.setEnabled(true);
@@ -178,7 +182,7 @@ public class App extends JFrame {
 		});
 		btns.add(btnClose);
 
-		addGbcComponent(btns, 0, 2, 2, 1);
+		addGbcComponent(btns, 0, 3, 2, 1);
 
 	}
 
@@ -188,7 +192,7 @@ public class App extends JFrame {
 			public void run() {
 				while (true) {
 					if (enableCamera == false) {
-						labelCamera.setIcon(loadIcon("iconApp//labelCamera.png", 400, 400));
+						labelCamera.setIcon(loadIcon("iconApp//labelCamera.png", 450, 450));
 						break;
 					}
 					videoCap.read(image);
@@ -260,15 +264,15 @@ public class App extends JFrame {
 						}
 						if (takePhoto == false) {
 							JOptionPane.showMessageDialog(getContentPane(), "Xong");
-							labelImg.setIcon(loadIcon("iconApp//labelImg.png", 400, 400));
+							labelImg.setIcon(loadIcon("iconApp//labelImg.png", 450, 450));
 							btnCloseCamera.setEnabled(true);
 							labelImg.repaint();
 							break;
 						}
 						Mat face = faceDetection.cutFace(image);
 						if (face != null) {
-							ImageIcon icon = new ImageIcon(Java2DFrameUtils.toBufferedImage(face).getScaledInstance(400,
-									400, Image.SCALE_SMOOTH));
+							ImageIcon icon = new ImageIcon(Java2DFrameUtils.toBufferedImage(face).getScaledInstance(600,
+									600, Image.SCALE_SMOOTH));
 							faceDetection.saveImg(face, folderRoot.getAbsolutePath(), count + "");
 							labelImg.setIcon(icon);
 							labelImg.repaint();
@@ -329,11 +333,12 @@ public class App extends JFrame {
 					Mat output = faceRecognizer.recognizerImage(input);
 //					int h = 400;
 //					int w = (int) (400 * ((double) output.cols() / (double) output.rows()));
-					int w = 400;
-					int h = (int) (400 * ((double) output.rows() / (double) output.cols()));
+					int w = 450;
+					int h = (int) (450 * ((double) output.rows() / (double) output.cols()));
 					ImageIcon icon = new ImageIcon(
 							Java2DFrameUtils.toBufferedImage(output).getScaledInstance(w, h, Image.SCALE_SMOOTH));
 					labelImg.setIcon(icon);
+					labelName.setText(faceRecognizer.getName());
 					labelImg.repaint();
 				}
 			}
@@ -346,13 +351,14 @@ public class App extends JFrame {
 			public void run() {
 				while (true) {
 					if (enableCamera == false) {
-						labelCamera.setIcon(loadIcon("iconApp//labelCamera.png", 400, 400));
+						labelCamera.setIcon(loadIcon("iconApp//labelCamera.png", 450, 450));
 						break;
 					}
 					videoCap.read(image);
 					ImageIcon icon = new ImageIcon(
 							Java2DFrameUtils.toBufferedImage(faceRecognizer.recognizerImage(image)));
 					labelCamera.setIcon(icon);
+					labelName.setText(faceRecognizer.getName());
 					labelCamera.repaint();
 				}
 			}
