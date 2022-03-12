@@ -1,5 +1,4 @@
 package faceReconition;
-// file dùng tạo dataset
 
 import static org.bytedeco.opencv.global.opencv_core.CV_32SC1;
 

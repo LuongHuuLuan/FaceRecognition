@@ -73,7 +73,7 @@ public class FaceRecognizer {
 	}
 
 	public String predictName(int id, double confidence) {
-		if (confidence < 100) {
+		if (confidence < 97) {
 			name = FaceManager.getFaceName(id);
 			return name;
 		} else {

@@ -300,7 +300,6 @@ public class App extends JFrame {
 				btnTrain.setEnabled(false);
 				buildModel train = new buildModel();
 				boolean finish = train.build("dataset//", "model");
-//				faceRecognizer.reloadModel();
 				if (finish) {
 					JOptionPane.showMessageDialog(getContentPane(), "Train xong vui long khoi dong lai ung dung");
 					btnTrain.setEnabled(true);
@@ -316,7 +315,7 @@ public class App extends JFrame {
 			@Override
 			public void run() {
 				JFileChooser fileChooser = new JFileChooser();
-				FileNameExtensionFilter imgExt = new FileNameExtensionFilter("hinh anh", "jpg", "png");
+				FileNameExtensionFilter imgExt = new FileNameExtensionFilter("hinh anh", "jpg", "png", "jpeg");
 				fileChooser.setFileFilter(imgExt);
 				fileChooser.setMultiSelectionEnabled(false);
 
